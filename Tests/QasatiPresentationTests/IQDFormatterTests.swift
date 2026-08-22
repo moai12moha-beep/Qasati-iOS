@@ -1,5 +1,5 @@
 import XCTest
-@testable import QasatiDashboardFeature
+@testable import QasatiPresentation
 
 final class IQDFormatterTests: XCTestCase {
 
