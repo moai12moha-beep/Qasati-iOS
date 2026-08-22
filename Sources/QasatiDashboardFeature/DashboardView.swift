@@ -1,5 +1,6 @@
 import SwiftUI
 import QasatiDomain
+import QasatiPresentation
 
 /// شاشة اللوحة الرئيسية: الرصيد الحالي + ست بطاقات إحصائية. عرض بحت لـ
 /// `DashboardViewModel.summary` — بلا أي تفاعل CRUD، بلا زر راتب سريع (مؤجَّل لمرحلة
