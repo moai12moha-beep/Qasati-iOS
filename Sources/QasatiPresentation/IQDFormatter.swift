@@ -1,12 +1,14 @@
 import Foundation
 
 /// تنسيق عرضي بحت للمبالغ بالدينار العراقي — لا يغيّر أي قيمة مخزَّنة أو محسوبة،
-/// فقط يحوّل Int (من طبقة Domain) إلى نص للعرض. عمدًا داخل QasatiDashboardFeature
-/// وليس QasatiDomain: هذا تنسيق UI، وليس قاعدة عمل.
+/// فقط يحوّل Int (من طبقة Domain) إلى نص للعرض. عمدًا مستقل تمامًا عن SwiftData/SwiftUI/
+/// TransactionService/LedgerCalculator — تنسيق نصي بحت لا غير.
 ///
-/// يطابق formatNumberOnly/formatIQD في qasati-standalone_2.html: فواصل آلاف بأسلوب
-/// en-US ثم لاحقة "د.ع"، ومطابقة أيضًا لمنطق الإشارة الصريحة (+/-) المستخدَم في عرض
-/// "ملخص هذا الشهر" هناك.
+/// نُقل من QasatiDashboardFeature (Phase 4) إلى هذا الهدف المشترك في Phase 7 بعد أن
+/// احتاجته ميزة ثانية (السجل)، بموافقة صريحة، وبلا أي تغيير في السلوك: نفس الخوارزمية
+/// حرفيًا، فقط تغيّر الموضع. يطابق formatNumberOnly/formatIQD في qasati-standalone_2.html:
+/// فواصل آلاف بأسلوب en-US ثم لاحقة "د.ع"، ومطابقة أيضًا لمنطق الإشارة الصريحة (+/-)
+/// المستخدَم في عرض "ملخص هذا الشهر" هناك.
 public enum IQDFormatter {
 
     private static let numberFormatter: NumberFormatter = {
