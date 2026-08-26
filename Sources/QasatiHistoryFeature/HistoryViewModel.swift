@@ -3,6 +3,7 @@ import Observation
 import SwiftData
 import QasatiDomain
 import QasatiPersistence
+import QasatiTransactionService
 
 /// يحمّل كل العمليات ويحوّلها إلى `[LedgerEntry]` عبر `LedgerCalculator.recompute` (غير
 /// مُعدَّل) — `balanceAfter` لكل صف يأتي من هناك مباشرة، ولا يُعاد حسابه هنا إطلاقًا.
@@ -15,6 +16,11 @@ public final class HistoryViewModel {
     public var searchText: String = ""
     public var typeFilter: HistoryTypeFilter = .all
     public var selectedMonthKey: String = "all"
+
+    /// رسالة خطأ الحذف الوحيدة (مثلًا: رفض OQ-1 لأن الحذف سيُنتج رصيدًا سالبًا).
+    /// لا يوجد "حالة نجاح" منفصلة للحذف — النجاح يُلاحَظ ببساطة عبر تحديث allEntries
+    /// بعد load().
+    public private(set) var deleteErrorMessage: String?
 
     private let context: ModelContext
     private let calendar: Calendar
@@ -71,5 +77,40 @@ public final class HistoryViewModel {
     /// `filtered.length === 0` (بعد استبعاد الحالة الفارغة تمامًا) في المصدر.
     public var hasNoResults: Bool {
         !allEntries.isEmpty && filteredEntries.isEmpty
+    }
+
+    /// يحذف عملية بمعرّفها عبر TransactionService.delete (غير مُعدَّل) — الذي يُفوّض
+    /// حماية OQ-1 (رفض أي حذف يُنتج رصيدًا سالبًا في أي نقطة زمنية) بالكامل إلى
+    /// LedgerCalculator.applyingDeletion. عند النجاح فقط: إعادة التحميل عبر load()
+    /// الموجودة أصلًا — لا تعديل محلي على allEntries بأي شكل (لا حالة UI وهمية).
+    public func delete(id: String) {
+        deleteErrorMessage = nil
+        do {
+            let result = try TransactionService.delete(id: id, in: context)
+            switch result {
+            case .success:
+                load()
+            case .failure(let error):
+                deleteErrorMessage = message(for: error)
+            }
+        } catch {
+            deleteErrorMessage = "تعذّر حذف العملية."
+        }
+    }
+
+    /// تُستدعى من الـ View عند إغلاق تنبيه الخطأ، لتصفير الحالة بدل تركها معلَّقة.
+    public func clearDeleteError() {
+        deleteErrorMessage = nil
+    }
+
+    private func message(for error: TransactionServiceError) -> String {
+        switch error {
+        case .ledger(.wouldProduceNegativeBalance):
+            return "لا يمكن حذف هذه العملية: سيؤدي ذلك إلى رصيد سالب في السجل."
+        case .ledger(.transactionNotFound):
+            return "تعذّر العثور على العملية."
+        case .invalidAmount, .duplicateID:
+            return "تعذّر حذف العملية."
+        }
     }
 }

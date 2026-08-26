@@ -1,5 +1,7 @@
 import SwiftUI
+import SwiftData
 import QasatiDomain
+import QasatiTransactionFormsFeature
 
 /// شاشة السجل: بحث + فلاتر نوع + فلتر شهر + قائمة + حالة فارغة/لا نتائج. عرض بحت
 /// لـ HistoryViewModel — لا حساب مالي، لا استدعاء مباشر لـ TransactionStore/LedgerCalculator.
@@ -10,10 +12,18 @@ import QasatiDomain
 @MainActor
 public struct HistoryView: View {
     @Bindable var viewModel: HistoryViewModel
+    let context: ModelContext
 
-    public init(viewModel: HistoryViewModel) {
+    /// نفس السياق (ModelContext) المُمرَّر لبناء viewModel — مطلوب هنا فقط لإنشاء
+    /// EditTransactionViewModel عند فتح نافذة التعديل. HistoryViewModel.context يبقى
+    /// خاصًا كما هو (لا كسر لتغليفه)؛ هذا سياق مستقل يُمرَّر من نفس المستدعي.
+    public init(viewModel: HistoryViewModel, context: ModelContext) {
         self.viewModel = viewModel
+        self.context = context
     }
+
+    @State private var editingEntry: LedgerEntry?
+    @State private var pendingDeleteEntry: LedgerEntry?
 
     public var body: some View {
         VStack(spacing: 12) {
@@ -24,6 +34,52 @@ public struct HistoryView: View {
         .environment(\.layoutDirection, .rightToLeft)
         .task {
             viewModel.load()
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { editingEntry != nil },
+                set: { isPresented in if !isPresented { editingEntry = nil } }
+            )
+        ) {
+            if let entry = editingEntry {
+                EditTransactionView(
+                    viewModel: EditTransactionViewModel(transaction: entry.transaction, context: context),
+                    onCancel: { editingEntry = nil },
+                    onSaved: {
+                        editingEntry = nil
+                        viewModel.load()
+                    }
+                )
+            }
+        }
+        .confirmationDialog(
+            "هل أنت متأكد من حذف هذه العملية؟",
+            isPresented: Binding(
+                get: { pendingDeleteEntry != nil },
+                set: { isPresented in if !isPresented { pendingDeleteEntry = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("حذف العملية", role: .destructive) {
+                if let id = pendingDeleteEntry?.transaction.id {
+                    viewModel.delete(id: id)
+                }
+                pendingDeleteEntry = nil
+            }
+            Button("إلغاء", role: .cancel) {
+                pendingDeleteEntry = nil
+            }
+        }
+        .alert(
+            "خطأ",
+            isPresented: Binding(
+                get: { viewModel.deleteErrorMessage != nil },
+                set: { isPresented in if !isPresented { viewModel.clearDeleteError() } }
+            )
+        ) {
+            Button("حسنًا", role: .cancel) {}
+        } message: {
+            Text(viewModel.deleteErrorMessage ?? "")
         }
     }
 
@@ -65,7 +121,11 @@ public struct HistoryView: View {
             ScrollView {
                 LazyVStack(spacing: 10) {
                     ForEach(viewModel.filteredEntries, id: \.transaction.id) { entry in
-                        HistoryRowView(entry: entry)
+                        HistoryRowView(
+                            entry: entry,
+                            onEdit: { editingEntry = entry },
+                            onDelete: { pendingDeleteEntry = entry }
+                        )
                     }
                 }
             }

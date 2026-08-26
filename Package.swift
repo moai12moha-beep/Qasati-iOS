@@ -65,7 +65,7 @@ let package = Package(
         ),
         .target(
             name: "QasatiHistoryFeature",
-            dependencies: ["QasatiDomain", "QasatiPersistence", "QasatiPresentation"]
+            dependencies: ["QasatiDomain", "QasatiPersistence", "QasatiPresentation", "QasatiTransactionService", "QasatiTransactionFormsFeature"]
         ),
         .testTarget(
             name: "QasatiHistoryFeatureTests",
