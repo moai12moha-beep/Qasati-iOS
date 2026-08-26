@@ -81,6 +81,23 @@ public enum TransactionStore {
         context.delete(existing)
         try context.save()
     }
+
+    /// يحذف كل السجلات المخزَّنة الحالية، ثم يُدرج المجموعة البديلة الكاملة، ثم يحفظ
+    /// **مرة واحدة فقط** في النهاية — لا حفظ جزئي لكل سجل. كل الحذف/الإدراج يبقى
+    /// مُعلَّقًا ضمن نفس مجموعة تغييرات context.save() الواحدة: إما تُطبَّق كلها معًا
+    /// أو لا شيء منها إن فشل الحفظ (استخدام Phase 9 لهذا: استعادة نسخة احتياطية، بعد
+    /// أن يكون التحقق الكامل من صحتها قد تم بالفعل خارج هذه الدالة).
+    /// عملية تخزين بحتة بلا أي تحقق من صحة القيم أو منطق نسخ احتياطي هنا.
+    public static func replaceAll(with transactions: [Transaction], in context: ModelContext) throws {
+        let existing = try context.fetch(FetchDescriptor<PersistedTransaction>())
+        for record in existing {
+            context.delete(record)
+        }
+        for transaction in transactions {
+            context.insert(makePersisted(from: transaction))
+        }
+        try context.save()
+    }
 }
 
 /// أخطاء طبقة التخزين البحتة نفسها — منفصلة عن `LedgerError` (طبقة Domain) عمدًا،
