@@ -17,6 +17,14 @@ public final class SettingsViewModel {
     /// للمستخدم أبدًا؛ الرسالة الظاهرة له عامة دومًا (راجع message للمستخدم أدناه).
     public private(set) var lastImportError: BackupError?
 
+    /// إشارة نجاح صريحة تُضبَط فقط بعد استيراد أو مسح ناجح فعليًا لبيانات مخزَّنة —
+    /// بنفس شكل didSaveSuccessfully في TransactionFormViewModel/EditTransactionViewModel
+    /// وdidDeleteSucceed في HistoryViewModel (Phase 16 refresh-signal fix). التصدير
+    /// (exportFile) **لا** يضبط هذه القيمة أبدًا عمدًا: التصدير لا يُغيّر أي بيانات
+    /// مخزَّنة، فلا حاجة لأي إعادة تحميل في الشاشات الأخرى بعده. لا تغيير في statusMessage
+    /// أو isError أو أي رسالة — فقط إشارة إضافية بحتة.
+    public private(set) var didMutateSucceed: Bool = false
+
     private let context: ModelContext
 
     public init(context: ModelContext) {
@@ -55,12 +63,14 @@ public final class SettingsViewModel {
     /// BackupService.importBackup فقط، ويُترجم أي فشل إلى رسالة عامة واحدة للمستخدم،
     /// مع الاحتفاظ بالسبب التقني الدقيق داخليًا في lastImportError.
     public func importData(_ data: Data) {
+        didMutateSucceed = false
         let result = BackupService.importBackup(data, into: context)
         switch result {
         case .success(let count):
             lastImportError = nil
             statusMessage = "تم استيراد \(count) عملية بنجاح."
             isError = false
+            didMutateSucceed = true
         case .failure(let error):
             lastImportError = error
             statusMessage = Self.genericImportFailureMessage
@@ -71,6 +81,7 @@ public final class SettingsViewModel {
     /// يُستدعى عندما يتعذّر حتى قراءة الملف المُختار (قبل أن تصل بياناته إلى
     /// BackupService أصلًا) — نفس الرسالة العامة، تمامًا كأي فشل استيراد آخر.
     public func reportImportReadFailure() {
+        didMutateSucceed = false
         lastImportError = nil
         statusMessage = Self.genericImportFailureMessage
         isError = true
@@ -79,10 +90,12 @@ public final class SettingsViewModel {
     /// يمسح كل البيانات عبر TransactionStore.replaceAll(with: [], in:) الموجودة
     /// بالفعل — بلا أي بدائية تخزين جديدة.
     public func wipeAllData() {
+        didMutateSucceed = false
         do {
             try TransactionStore.replaceAll(with: [], in: context)
             statusMessage = "تم حذف جميع البيانات من هذا الجهاز."
             isError = false
+            didMutateSucceed = true
         } catch {
             statusMessage = "تعذّر حذف البيانات."
             isError = true
