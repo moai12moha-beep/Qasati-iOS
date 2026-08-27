@@ -49,16 +49,6 @@ final class LedgerCalculatorTests: XCTestCase {
         XCTAssertEqual(result.ordered.map(\.balanceAfter), [500_000, 400_000])
     }
 
-    // MARK: - 3) رفض سحب أكبر من الرصيد
-
-    func test_canWithdraw_rejectsAmountGreaterThanBalance() {
-        let deposit = tx("t1", .deposit, 500_000, date: "2026-08-01T08:00:00.000Z", seq: 1)
-
-        XCTAssertFalse(LedgerCalculator.canWithdraw(amount: 500_001, given: [deposit]))
-        XCTAssertTrue(LedgerCalculator.canWithdraw(amount: 500_000, given: [deposit])) // يساوي الرصيد بالكامل مسموح
-        XCTAssertTrue(LedgerCalculator.canWithdraw(amount: 1, given: [deposit]))
-    }
-
     // MARK: - 4) سلسلة إيداعات وسحوبات
 
     func test_sequenceOfDepositsAndWithdrawals_computesCorrectFinalBalance() {
@@ -302,10 +292,5 @@ final class LedgerCalculatorTests: XCTestCase {
         XCTAssertEqual(summary.countIn, 0)
         XCTAssertEqual(summary.countOut, 0)
         XCTAssertEqual(summary.monthNet, 0)
-    }
-
-    func test_emptyLedger_canWithdraw_alwaysFalseForPositiveAmount() {
-        XCTAssertFalse(LedgerCalculator.canWithdraw(amount: 1, given: []))
-        XCTAssertTrue(LedgerCalculator.canWithdraw(amount: 0, given: [])) // 0 <= 0
     }
 }

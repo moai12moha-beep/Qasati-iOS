@@ -65,6 +65,7 @@ final class HistoryViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.isEmpty)
         XCTAssertFalse(viewModel.hasNoResults)
         XCTAssertTrue(viewModel.filteredEntries.isEmpty)
+        XCTAssertNil(viewModel.loadError)
     }
 
     // 2) كل العمليات
@@ -81,6 +82,7 @@ final class HistoryViewModelTests: XCTestCase {
 
         XCTAssertFalse(viewModel.isEmpty)
         XCTAssertEqual(viewModel.filteredEntries.count, 2)
+        XCTAssertNil(viewModel.loadError)
     }
 
     // 3) الأحدث أولًا

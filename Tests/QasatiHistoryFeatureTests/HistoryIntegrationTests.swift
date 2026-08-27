@@ -61,6 +61,7 @@ final class HistoryIntegrationTests: XCTestCase {
         XCTAssertEqual(history.filteredEntries.count, 1)
         XCTAssertEqual(history.filteredEntries.first?.transaction.note, "راتب شهر آب")
         XCTAssertEqual(history.filteredEntries.first?.transaction.amount, 500_000)
+        XCTAssertNil(history.loadError)
     }
 
     @MainActor
