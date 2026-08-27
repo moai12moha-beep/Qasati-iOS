@@ -16,7 +16,8 @@ let package = Package(
         .library(name: "QasatiPresentation", targets: ["QasatiPresentation"]),
         .library(name: "QasatiHistoryFeature", targets: ["QasatiHistoryFeature"]),
         .library(name: "QasatiBackupService", targets: ["QasatiBackupService"]),
-        .library(name: "QasatiSettingsFeature", targets: ["QasatiSettingsFeature"])
+        .library(name: "QasatiSettingsFeature", targets: ["QasatiSettingsFeature"]),
+        .library(name: "QasatiSecurityFeature", targets: ["QasatiSecurityFeature"])
     ],
     targets: [
         .target(
@@ -88,6 +89,13 @@ let package = Package(
         .testTarget(
             name: "QasatiSettingsFeatureTests",
             dependencies: ["QasatiSettingsFeature", "QasatiDomain", "QasatiPersistence", "QasatiBackupService"]
+        ),
+        .target(
+            name: "QasatiSecurityFeature"
+        ),
+        .testTarget(
+            name: "QasatiSecurityFeatureTests",
+            dependencies: ["QasatiSecurityFeature"]
         )
     ]
 )
