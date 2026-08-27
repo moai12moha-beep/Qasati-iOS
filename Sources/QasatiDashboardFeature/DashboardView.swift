@@ -19,6 +19,11 @@ import QasatiPresentation
 public struct DashboardView: View {
     let viewModel: DashboardViewModel
 
+    /// يعكس تفضيل "إخفاء الرصيد" (Phase 10) — Bool بحت من QasatiPresentation، بلا أي
+    /// اعتماد على QasatiSettingsFeature. يُطبَّق فقط على الرصيد الرئيسي هنا، تمامًا
+    /// كسلوك المصدر المُتحقَّق منه (بطاقات الإحصائيات الست لا تتأثر إطلاقًا).
+    @Environment(\.isBalanceHidden) private var isBalanceHidden
+
     public init(viewModel: DashboardViewModel) {
         self.viewModel = viewModel
     }
@@ -44,6 +49,8 @@ public struct DashboardView: View {
                 .foregroundStyle(.secondary)
             Text("\(IQDFormatter.formatNumberOnly(viewModel.summary.balance)) د.ع")
                 .font(.system(size: 34, weight: .heavy))
+                .blur(radius: isBalanceHidden ? 12 : 0)
+                .accessibilityHidden(isBalanceHidden)
         }
         .frame(maxWidth: .infinity)
         .padding(24)
