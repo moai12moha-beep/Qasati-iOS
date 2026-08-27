@@ -42,13 +42,27 @@ public struct DashboardView: View {
         }
     }
 
+    @ViewBuilder
     private var balanceSection: some View {
+        if isBalanceHidden {
+            balanceSectionContent
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("الرصيد الحالي")
+                .accessibilityValue("مخفي")
+        } else {
+            balanceSectionContent
+                .accessibilityElement(children: .combine)
+        }
+    }
+
+    private var balanceSectionContent: some View {
         VStack(spacing: 8) {
             Text("💰 الرصيد الحالي")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
+                .accessibilityLabel("الرصيد الحالي")
             Text("\(IQDFormatter.formatNumberOnly(viewModel.summary.balance)) د.ع")
-                .font(.system(size: 34, weight: .heavy))
+                .font(.system(.largeTitle, weight: .heavy))
                 .blur(radius: isBalanceHidden ? 12 : 0)
                 .accessibilityHidden(isBalanceHidden)
         }
@@ -82,5 +96,6 @@ public struct DashboardView: View {
         .frame(maxWidth: .infinity, alignment: .trailing)
         .padding(14)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .accessibilityElement(children: .combine)
     }
 }

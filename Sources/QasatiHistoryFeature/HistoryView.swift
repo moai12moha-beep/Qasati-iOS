@@ -94,6 +94,7 @@ public struct HistoryView: View {
             TextField("🔍 بحث في الملاحظات...", text: $viewModel.searchText)
                 .textFieldStyle(.roundedBorder)
                 .multilineTextAlignment(.trailing)
+                .accessibilityLabel("بحث في الملاحظات")
 
             Picker("الشهر", selection: $viewModel.selectedMonthKey) {
                 Text("كل الأشهر").tag("all")
@@ -134,7 +135,9 @@ public struct HistoryView: View {
 
     private var emptyStateView: some View {
         VStack(spacing: 8) {
-            Text("🔐").font(.system(size: 40))
+            Text("🔐")
+                .font(.system(size: 40))
+                .accessibilityHidden(true)
             Text("القاصة فارغة").font(.headline)
             Text("ابدأ بإضافة راتبك أو أول مبلغ إلى القاصة.")
                 .font(.caption)
@@ -143,11 +146,14 @@ public struct HistoryView: View {
         .frame(maxWidth: .infinity)
         .padding(40)
         .multilineTextAlignment(.center)
+        .accessibilityElement(children: .combine)
     }
 
     private var noResultsView: some View {
         VStack(spacing: 8) {
-            Text("🔍").font(.system(size: 40))
+            Text("🔍")
+                .font(.system(size: 40))
+                .accessibilityHidden(true)
             Text("لا توجد نتائج").font(.headline)
             Text("جرّب كلمة بحث أو فلترة مختلفة.")
                 .font(.caption)
@@ -156,13 +162,16 @@ public struct HistoryView: View {
         .frame(maxWidth: .infinity)
         .padding(40)
         .multilineTextAlignment(.center)
+        .accessibilityElement(children: .combine)
     }
 
     private func filterChip(_ filter: HistoryTypeFilter, label: String) -> some View {
-        Button(label) {
+        let isSelected = viewModel.typeFilter == filter
+        return Button(label) {
             viewModel.typeFilter = filter
         }
         .buttonStyle(.bordered)
-        .tint(viewModel.typeFilter == filter ? Color.accentColor : Color.secondary)
+        .tint(isSelected ? Color.accentColor : Color.secondary)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }

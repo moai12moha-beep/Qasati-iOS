@@ -20,8 +20,36 @@ public struct HistoryRowView: View {
 
     public var body: some View {
         VStack(alignment: .trailing, spacing: 6) {
+            descriptionSection
+                .accessibilityElement(children: .combine)
+
+            HStack(spacing: 10) {
+                Spacer()
+                Button(action: onDelete) {
+                    Image(systemName: "trash")
+                }
+                .buttonStyle(.bordered)
+                .frame(minWidth: 44, minHeight: 44)
+                .accessibilityLabel("حذف العملية")
+
+                Button(action: onEdit) {
+                    Image(systemName: "pencil")
+                }
+                .buttonStyle(.bordered)
+                .frame(minWidth: 44, minHeight: 44)
+                .accessibilityLabel("تعديل العملية")
+            }
+        }
+        .padding(14)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .environment(\.layoutDirection, .rightToLeft)
+    }
+
+    private var descriptionSection: some View {
+        VStack(alignment: .trailing, spacing: 6) {
             HStack {
                 Text(isDeposit ? "🟢" : "🔴")
+                    .accessibilityHidden(true)
                 Text(isDeposit ? "إيداع" : "سحب")
                     .fontWeight(.bold)
                     .foregroundStyle(isDeposit ? .green : .red)
@@ -40,28 +68,11 @@ public struct HistoryRowView: View {
             Text("📅 \(HistoryDateTimeFormatter.string(from: entry.transaction.dateISO))")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .accessibilityLabel(HistoryDateTimeFormatter.string(from: entry.transaction.dateISO))
 
             Text("الرصيد بعد العملية: \(IQDFormatter.formatIQD(entry.balanceAfter))")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-
-            HStack(spacing: 10) {
-                Spacer()
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.bordered)
-                .accessibilityLabel("حذف العملية")
-
-                Button(action: onEdit) {
-                    Image(systemName: "pencil")
-                }
-                .buttonStyle(.bordered)
-                .accessibilityLabel("تعديل العملية")
-            }
         }
-        .padding(14)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .environment(\.layoutDirection, .rightToLeft)
     }
 }
