@@ -62,6 +62,7 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertNotNil(url)
         XCTAssertFalse(viewModel.isError)
         XCTAssertEqual(viewModel.statusMessage, "تم تصدير نسخة احتياطية بنجاح.")
+        XCTAssertFalse(viewModel.didMutateSucceed) // التصدير لا يُغيّر بيانات مخزَّنة، فلا يضبط هذه الإشارة أبدًا
 
         let data = try Data(contentsOf: url!)
         let result = BackupService.importBackup(data, into: context)
@@ -88,6 +89,7 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isError)
         XCTAssertNil(viewModel.lastImportError)
         XCTAssertEqual(viewModel.statusMessage, "تم استيراد 1 عملية بنجاح.")
+        XCTAssertTrue(viewModel.didMutateSucceed)
 
         let stored = try TransactionStore.fetchAll(from: context)
         XCTAssertEqual(stored.map(\.id), ["tx_1"])
@@ -109,6 +111,7 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.isError)
         XCTAssertEqual(viewModel.statusMessage, "ملف غير صالح. يرجى اختيار نسخة احتياطية صحيحة من قاصتي.")
         XCTAssertEqual(viewModel.lastImportError, .malformedJSON) // السبب التقني الدقيق محفوظ داخليًا فقط
+        XCTAssertFalse(viewModel.didMutateSucceed)
 
         // البيانات الحالية لم تُلمَس (BackupService نفسها مسؤولة عن هذا الضمان، ونتحقق هنا من عدم كسره عبر الواجهة)
         XCTAssertEqual(try TransactionStore.fetchAll(from: context).map(\.id), ["keep"])
@@ -141,6 +144,7 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.isError)
         XCTAssertEqual(viewModel.statusMessage, "ملف غير صالح. يرجى اختيار نسخة احتياطية صحيحة من قاصتي.")
         XCTAssertNil(viewModel.lastImportError)
+        XCTAssertFalse(viewModel.didMutateSucceed)
     }
 
     // MARK: - Wipe
@@ -158,7 +162,31 @@ final class SettingsViewModelTests: XCTestCase {
 
         XCTAssertFalse(viewModel.isError)
         XCTAssertEqual(viewModel.statusMessage, "تم حذف جميع البيانات من هذا الجهاز.")
+        XCTAssertTrue(viewModel.didMutateSucceed)
         XCTAssertTrue(try TransactionStore.fetchAll(from: context).isEmpty)
+    }
+
+    // didMutateSucceed: false قبل أي محاولة، true بعد نجاح استيراد/مسح حقيقي فقط، ويعود
+    // false في أول محاولة فاشلة تالية — وليست قيمة "لاصقة" (Phase 16 refresh-signal fix)
+    @MainActor
+    func test_didMutateSucceed_trueOnlyAfterSuccessfulImportOrWipe_resetsOnNextFailedAttempt() throws {
+        let context = try makeContext()
+        let viewModel = SettingsViewModel(context: context)
+        XCTAssertFalse(viewModel.didMutateSucceed)
+
+        let validJSON = """
+        {"app":"qasati","version":1,"exportedAt":"2026-08-01T00:00:00.000Z","transactions":[
+          {"id":"tx_1","type":"deposit","amount":500000,"note":"","dateISO":"2026-08-01T00:00:00.000Z","seq":1}
+        ]}
+        """.data(using: .utf8)!
+        viewModel.importData(validJSON)
+        XCTAssertTrue(viewModel.didMutateSucceed)
+
+        viewModel.importData("not json at all".data(using: .utf8)!)
+        XCTAssertFalse(viewModel.didMutateSucceed)
+
+        viewModel.wipeAllData()
+        XCTAssertTrue(viewModel.didMutateSucceed)
     }
 
     // MARK: - clearStatus

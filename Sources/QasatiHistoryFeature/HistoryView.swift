@@ -13,13 +13,23 @@ import QasatiTransactionFormsFeature
 public struct HistoryView: View {
     @Bindable var viewModel: HistoryViewModel
     let context: ModelContext
+    let onMutationSucceeded: () -> Void
 
     /// نفس السياق (ModelContext) المُمرَّر لبناء viewModel — مطلوب هنا فقط لإنشاء
     /// EditTransactionViewModel عند فتح نافذة التعديل. HistoryViewModel.context يبقى
     /// خاصًا كما هو (لا كسر لتغليفه)؛ هذا سياق مستقل يُمرَّر من نفس المستدعي.
-    public init(viewModel: HistoryViewModel, context: ModelContext) {
+    ///
+    /// `onMutationSucceeded` (Phase 16 refresh-signal fix): يُستدعى فقط بعد تعديل أو حذف
+    /// ناجح فعليًا — لا استنتاج من deleteErrorMessage أو أي حالة أخرى. القيمة الافتراضية
+    /// الفارغة `{}` تُبقي أي استدعاء سابق لهذا المُهيِّئ متوافقًا مصدريًا بلا أي تغيير.
+    public init(
+        viewModel: HistoryViewModel,
+        context: ModelContext,
+        onMutationSucceeded: @escaping () -> Void = {}
+    ) {
         self.viewModel = viewModel
         self.context = context
+        self.onMutationSucceeded = onMutationSucceeded
     }
 
     @State private var editingEntry: LedgerEntry?
@@ -35,6 +45,11 @@ public struct HistoryView: View {
         .task {
             viewModel.load()
         }
+        .onChange(of: viewModel.didDeleteSucceed) { _, didSucceed in
+            if didSucceed {
+                onMutationSucceeded()
+            }
+        }
         .sheet(
             isPresented: Binding(
                 get: { editingEntry != nil },
@@ -48,6 +63,7 @@ public struct HistoryView: View {
                     onSaved: {
                         editingEntry = nil
                         viewModel.load()
+                        onMutationSucceeded()
                     }
                 )
             }

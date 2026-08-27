@@ -70,6 +70,7 @@ final class HistoryViewModelDeleteTests: XCTestCase {
         viewModel.delete(id: "t1")
 
         XCTAssertNil(viewModel.deleteErrorMessage)
+        XCTAssertTrue(viewModel.didDeleteSucceed)
         XCTAssertEqual(viewModel.allEntries.map(\.transaction.id), ["t2"])
         // تحقق مستقل من طبقة التخزين نفسها، وليس فقط من حالة الـ ViewModel
         let persisted = try TransactionStore.fetchAll(from: context)
@@ -91,6 +92,7 @@ final class HistoryViewModelDeleteTests: XCTestCase {
         viewModel.delete(id: "t1")
 
         XCTAssertEqual(viewModel.deleteErrorMessage, "لا يمكن حذف هذه العملية: سيؤدي ذلك إلى رصيد سالب في السجل.")
+        XCTAssertFalse(viewModel.didDeleteSucceed)
         XCTAssertEqual(viewModel.allEntries.count, 2) // لم يتغيّر شيء
         let persisted = try TransactionStore.fetchAll(from: context)
         XCTAssertEqual(Set(persisted.map(\.id)), Set(["t1", "t2"]))
@@ -146,6 +148,29 @@ final class HistoryViewModelDeleteTests: XCTestCase {
         viewModel.delete(id: "does-not-exist")
 
         XCTAssertEqual(viewModel.deleteErrorMessage, "تعذّر العثور على العملية.")
+        XCTAssertFalse(viewModel.didDeleteSucceed)
+    }
+
+    // didDeleteSucceed: false قبل أي محاولة، true بعد نجاح حقيقي فقط، ويعود false في أول
+    // محاولة فاشلة تالية — وليست قيمة "لاصقة" (Phase 16 refresh-signal fix)
+    @MainActor
+    func test_didDeleteSucceed_falseInitially_trueOnlyAfterSuccess_resetsOnNextFailedAttempt() throws {
+        let context = try makeContext()
+        let t1 = tx(id: "t1", type: .deposit, amount: 500_000, dateISOString: "2026-08-01T08:00:00.000Z", seq: 1)
+        try TransactionStore.save(t1, in: context)
+
+        let viewModel = HistoryViewModel(context: context, calendar: utcCalendar)
+        viewModel.load()
+        XCTAssertFalse(viewModel.didDeleteSucceed)
+
+        viewModel.delete(id: "does-not-exist")
+        XCTAssertFalse(viewModel.didDeleteSucceed)
+
+        viewModel.delete(id: "t1")
+        XCTAssertTrue(viewModel.didDeleteSucceed)
+
+        viewModel.delete(id: "does-not-exist-again")
+        XCTAssertFalse(viewModel.didDeleteSucceed)
     }
 
     // clearDeleteError يُصفّر الحالة كما تستدعيه الـ View عند إغلاق تنبيه الخطأ

@@ -18,9 +18,15 @@ public final class HistoryViewModel {
     public var selectedMonthKey: String = "all"
 
     /// رسالة خطأ الحذف الوحيدة (مثلًا: رفض OQ-1 لأن الحذف سيُنتج رصيدًا سالبًا).
-    /// لا يوجد "حالة نجاح" منفصلة للحذف — النجاح يُلاحَظ ببساطة عبر تحديث allEntries
-    /// بعد load().
     public private(set) var deleteErrorMessage: String?
+
+    /// إشارة نجاح صريحة تُضبَط عند حذف حقيقي ناجح فقط — بنفس شكل didSaveSuccessfully في
+    /// TransactionFormViewModel/EditTransactionViewModel (Phase 16 refresh-signal fix):
+    /// طبقة التطبيق (خارج هذه الحزمة) تحتاج إشارة نجاح صريحة قابلة للمراقبة لتفعيل إعادة
+    /// تحميل الشاشات الأخرى، بدل استنتاج النجاح من deleteErrorMessage == nil (وهي حالة
+    /// لا تُميّز بين "نجح للتو" و"لم يُحاوَل الحذف إطلاقًا"). لا تغيير في سلوك الحذف أو
+    /// رسائله — فقط إشارة إضافية بحتة.
+    public private(set) var didDeleteSucceed: Bool = false
 
     /// خطأ الجلب الفعلي من TransactionStore.fetchAll، إن وُجد — يماثل
     /// DashboardViewModel.loadError (Phase 15): كلاهما يستدعي fetchAll نفسها، فكلاهما
@@ -97,11 +103,13 @@ public final class HistoryViewModel {
     /// الموجودة أصلًا — لا تعديل محلي على allEntries بأي شكل (لا حالة UI وهمية).
     public func delete(id: String) {
         deleteErrorMessage = nil
+        didDeleteSucceed = false
         do {
             let result = try TransactionService.delete(id: id, in: context)
             switch result {
             case .success:
                 load()
+                didDeleteSucceed = true
             case .failure(let error):
                 deleteErrorMessage = message(for: error)
             }
