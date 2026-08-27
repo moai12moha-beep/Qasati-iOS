@@ -78,12 +78,6 @@ public enum LedgerCalculator {
         )
     }
 
-    /// يطابق الشرط في `handleWithdrawSubmit`: `amount > summary.balance` يُرفض.
-    /// سحب يساوي الرصيد بالكامل مسموح (الرصيد الناتج صفر، وليس سالبًا).
-    public static func canWithdraw(amount: Int, given transactions: [Transaction]) -> Bool {
-        amount <= recompute(transactions).finalBalance
-    }
-
     /// صحيح إذا أنتجت هذه القائمة رصيدًا سالبًا (< 0) في أي نقطة زمنية عبر كامل الترتيب
     /// التاريخي — وليس فقط في الرصيد النهائي.
     public static func wouldProduceNegativeBalance(_ transactions: [Transaction]) -> Bool {

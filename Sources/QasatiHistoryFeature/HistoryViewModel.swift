@@ -22,6 +22,13 @@ public final class HistoryViewModel {
     /// بعد load().
     public private(set) var deleteErrorMessage: String?
 
+    /// خطأ الجلب الفعلي من TransactionStore.fetchAll، إن وُجد — يماثل
+    /// DashboardViewModel.loadError (Phase 15): كلاهما يستدعي fetchAll نفسها، فكلاهما
+    /// يجب أن يعالج فشلها بنفس الأسلوب (التقاط الخطأ الحقيقي)، بدل تحويله بصمت إلى
+    /// قائمة فارغة كما كان الحال هنا سابقًا. لا تغيير في سلوك النجاح: allEntries تُحدَّث
+    /// تمامًا كما كانت، ولا تُستخدَم هذه الخاصية بعد من أي View حاليًا.
+    public private(set) var loadError: Error?
+
     private let context: ModelContext
     private let calendar: Calendar
 
@@ -33,8 +40,13 @@ public final class HistoryViewModel {
     /// يجلب كل العمليات ويعيد بناء الترتيب/الرصيد من الصفر — يطابق فلسفة "أعد الحساب
     /// دومًا من سجل العمليات" المُطبَّقة في LedgerCalculator نفسه.
     public func load() {
-        let transactions = (try? TransactionStore.fetchAll(from: context)) ?? []
-        allEntries = LedgerCalculator.recompute(transactions).ordered
+        do {
+            let transactions = try TransactionStore.fetchAll(from: context)
+            allEntries = LedgerCalculator.recompute(transactions).ordered
+            loadError = nil
+        } catch {
+            loadError = error
+        }
     }
 
     /// مفاتيح الأشهر الموجودة فعليًا في البيانات، الأحدث أولًا — تُستخدَم لتعبئة قائمة

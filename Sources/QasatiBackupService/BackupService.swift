@@ -78,20 +78,10 @@ public enum BackupService {
     }
 
     /// يطابق صيغة إخراج `Date.prototype.toISOString()` في JavaScript بالضبط —
-    /// نفس الصيغة المستخدَمة في `Transaction` (Phase 1)، مُكرَّرة هنا محليًا عمدًا
-    /// لأن منسِّقات `Transaction` الداخلية `internal` وليست `public`.
-    private static let isoFormatterWithFractionalSeconds: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
-
-    private static let isoFormatterWithoutFractionalSeconds: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter
-    }()
-
+    /// نفس الصيغة المستخدَمة في `Transaction` (Phase 1). يُعاد استخدام منسِّقيّ
+    /// `Transaction` مباشرة (Phase 15) بدل نسخة مكرَّرة محليًا، بعد أن أصبحا `public` —
+    /// نفس خيارات التنسيق والناتج بالضبط، بلا أي تغيير سلوكي.
+    ///
     /// إستراتيجية تاريخ مخصَّصة تُطبَّق فقط على `exportedAt` (النوع الوحيد الفعلي من
     /// `Date` في هذه الشجرة) — `Transaction.dateISO` يُفكَّك يدويًا كنص داخل `Transaction`
     /// نفسها، فلا يتأثر بإستراتيجية الترميز/فك الترميز الخاصة بهذا المُرمِّز إطلاقًا.
@@ -100,7 +90,7 @@ public enum BackupService {
         encoder.outputFormatting = [.prettyPrinted]
         encoder.dateEncodingStrategy = .custom { date, encoder in
             var container = encoder.singleValueContainer()
-            try container.encode(isoFormatterWithFractionalSeconds.string(from: date))
+            try container.encode(Transaction.isoFormatterWithFractionalSeconds.string(from: date))
         }
         return encoder
     }
@@ -110,8 +100,8 @@ public enum BackupService {
         decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let string = try container.decode(String.self)
-            guard let date = isoFormatterWithFractionalSeconds.date(from: string)
-                ?? isoFormatterWithoutFractionalSeconds.date(from: string) else {
+            guard let date = Transaction.isoFormatterWithFractionalSeconds.date(from: string)
+                ?? Transaction.isoFormatterWithoutFractionalSeconds.date(from: string) else {
                 throw DecodingError.dataCorruptedError(
                     in: container,
                     debugDescription: "Invalid ISO-8601 date string: \(string)"

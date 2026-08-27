@@ -74,14 +74,20 @@ extension Transaction: Codable {
 
     /// يطابق صيغة إخراج `Date.prototype.toISOString()` في JavaScript بالضبط،
     /// مثل: "2026-08-21T14:23:45.123Z".
-    static let isoFormatterWithFractionalSeconds: ISO8601DateFormatter = {
+    ///
+    /// `public` عمدًا (Phase 15): `QasatiBackupService` يحتاج نفس المنسِّق الحرفي لترميز/فك
+    /// ترميز `exportedAt`، وكان يحتفظ بنسخة مكرَّرة خاصة به لعدم إمكان الوصول لهذا التصريح
+    /// حين كان `internal`. رفع مستوى الوصول هنا أزال التكرار بلا أي تغيير في خيارات التنسيق
+    /// أو الناتج.
+    public static let isoFormatterWithFractionalSeconds: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter
     }()
 
     /// احتياط دفاعي فقط لملفات قديمة/معدَّلة يدويًا بلا أجزاء الثانية الكسرية.
-    static let isoFormatterWithoutFractionalSeconds: ISO8601DateFormatter = {
+    /// `public` لنفس سبب أعلاه.
+    public static let isoFormatterWithoutFractionalSeconds: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
         return formatter
