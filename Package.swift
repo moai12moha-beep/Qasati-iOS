@@ -49,7 +49,7 @@ let package = Package(
         ),
         .testTarget(
             name: "QasatiDashboardFeatureTests",
-            dependencies: ["QasatiDashboardFeature", "QasatiDomain", "QasatiPersistence"]
+            dependencies: ["QasatiDashboardFeature", "QasatiDomain", "QasatiPersistence", "QasatiTransactionFormsFeature"]
         ),
         .target(
             name: "QasatiTransactionFormsFeature",
@@ -72,7 +72,7 @@ let package = Package(
         ),
         .testTarget(
             name: "QasatiHistoryFeatureTests",
-            dependencies: ["QasatiHistoryFeature", "QasatiDomain", "QasatiPersistence"]
+            dependencies: ["QasatiHistoryFeature", "QasatiDomain", "QasatiPersistence", "QasatiTransactionFormsFeature"]
         ),
         .target(
             name: "QasatiBackupService",
