@@ -1,4 +1,5 @@
 import SwiftUI
+import Accessibility
 
 /// شاشة قفل بحتة تعرض حالة AppLockManager فقط — لا وصول لأي بيانات مالية، ولا
 /// استيراد لأي هدف Qasati آخر. لا تُستدعى تلقائيًا عند الإطلاق/الخلفية بعد؛ ذلك
@@ -20,14 +21,18 @@ public struct AppLockView: View {
             Image(systemName: iconName)
                 .font(.system(size: 56))
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
 
-            Text("قاصتي مقفلة")
-                .font(.title2.weight(.bold))
+            VStack(spacing: 24) {
+                Text("قاصتي مقفلة")
+                    .font(.title2.weight(.bold))
 
-            Text(availabilityDescription)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                Text(availabilityDescription)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .accessibilityElement(children: .combine)
 
             if let failureText {
                 Text(failureText)
@@ -47,6 +52,10 @@ public struct AppLockView: View {
         }
         .padding(32)
         .environment(\.layoutDirection, .rightToLeft)
+        .onChange(of: manager.lastFailureReason) { _, _ in
+            guard let failureText else { return }
+            AccessibilityNotification.Announcement(failureText).post()
+        }
     }
 
     private var iconName: String {

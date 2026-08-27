@@ -1,4 +1,5 @@
 import SwiftUI
+import Accessibility
 import QasatiDomain
 
 /// نموذج واحد قابل لإعادة الاستخدام لكلا الإيداع والسحب — يقرأ `viewModel.type` فقط
@@ -33,6 +34,7 @@ public struct TransactionFormView: View {
         VStack(alignment: .trailing, spacing: 14) {
             HStack {
                 Text(icon)
+                    .accessibilityHidden(true)
                 Text(title)
                     .font(.headline)
             }
@@ -58,6 +60,10 @@ public struct TransactionFormView: View {
         .onChange(of: viewModel.focusAmountFieldSignal) { _, _ in
             isAmountFieldFocused = true
         }
+        .onChange(of: viewModel.errorMessage) { _, newValue in
+            guard let newValue else { return }
+            AccessibilityNotification.Announcement(newValue).post()
+        }
     }
 
     private var amountField: some View {
@@ -72,6 +78,7 @@ public struct TransactionFormView: View {
                 .multilineTextAlignment(.trailing)
                 .textFieldStyle(.roundedBorder)
                 .focused($isAmountFieldFocused)
+                .accessibilityLabel("المبلغ")
         }
     }
 
@@ -83,6 +90,7 @@ public struct TransactionFormView: View {
             TextField("", text: $viewModel.noteText)
                 .multilineTextAlignment(.trailing)
                 .textFieldStyle(.roundedBorder)
+                .accessibilityLabel("الملاحظات، اختياري")
         }
     }
 }

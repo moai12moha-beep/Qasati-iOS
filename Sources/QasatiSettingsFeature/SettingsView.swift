@@ -155,11 +155,14 @@ public struct SettingsView: View {
     ) -> some View {
         HStack {
             trailing()
+                .accessibilitySortPriority(0)
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text(title).font(.subheadline.weight(.semibold))
                 Text(subtitle).font(.caption).foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilitySortPriority(1)
         }
     }
 }

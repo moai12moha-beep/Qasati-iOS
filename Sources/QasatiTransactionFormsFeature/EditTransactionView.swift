@@ -1,4 +1,5 @@
 import SwiftUI
+import Accessibility
 
 /// نافذة تعديل عملية موجودة. عمدًا لا تعرض/تُعدّل التاريخ إطلاقًا — فقط نص تنويه ثابت،
 /// يطابق edit-hint في qasati-standalone_2.html حرفيًا («التاريخ والوقت الأصليان
@@ -56,6 +57,10 @@ public struct EditTransactionView: View {
                 onSaved()
             }
         }
+        .onChange(of: viewModel.errorMessage) { _, newValue in
+            guard let newValue else { return }
+            AccessibilityNotification.Announcement(newValue).post()
+        }
     }
 
     private var amountField: some View {
@@ -69,6 +74,7 @@ public struct EditTransactionView: View {
                 #endif
                 .multilineTextAlignment(.trailing)
                 .textFieldStyle(.roundedBorder)
+                .accessibilityLabel("المبلغ")
         }
     }
 
@@ -80,6 +86,7 @@ public struct EditTransactionView: View {
             TextField("", text: $viewModel.noteText)
                 .multilineTextAlignment(.trailing)
                 .textFieldStyle(.roundedBorder)
+                .accessibilityLabel("الملاحظات")
         }
     }
 }
