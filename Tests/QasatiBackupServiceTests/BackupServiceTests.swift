@@ -238,6 +238,37 @@ final class BackupServiceTests: XCTestCase {
         XCTAssertTrue(try TransactionStore.fetchAll(from: context).isEmpty)
     }
 
+    // MARK: - Invalid import preserves pre-existing data exactly (Phase 13, decision C)
+
+    @MainActor
+    func test_import_invalidBackup_doesNotAlterExistingData() throws {
+        let context = try makeContext()
+        let existing1 = tx(id: "keep1", type: .deposit, amount: 500_000, note: "راتب", dateISOString: "2026-08-01T00:00:00.000Z", seq: 1)
+        let existing2 = tx(id: "keep2", type: .withdraw, amount: 100_000, note: "مصاريف", dateISOString: "2026-08-02T00:00:00.000Z", seq: 2)
+        try TransactionStore.save(existing1, in: context)
+        try TransactionStore.save(existing2, in: context)
+
+        let invalidJSON = """
+        {"app":"qasati","version":1,"exportedAt":"2026-08-10T00:00:00.000Z","transactions":[
+          {"id":"tx_bad","type":"deposit","amount":-1,"note":"","dateISO":"2026-08-10T00:00:00.000Z","seq":1}
+        ]}
+        """.data(using: .utf8)!
+
+        let result = BackupService.importBackup(invalidJSON, into: context)
+
+        XCTAssertEqual(result, .failure(.invalidTransactionRecord))
+        try assertUnchanged(context, expected: [existing1, existing2])
+
+        let restored = try TransactionStore.fetchAll(from: context)
+        let r1 = restored.first { $0.id == "keep1" }
+        XCTAssertEqual(r1?.amount, 500_000)
+        XCTAssertEqual(r1?.note, "راتب")
+        XCTAssertEqual(r1?.dateISO, existing1.dateISO)
+        let r2 = restored.first { $0.id == "keep2" }
+        XCTAssertEqual(r2?.amount, 100_000)
+        XCTAssertEqual(r2?.note, "مصاريف")
+    }
+
     // MARK: - Duplicate IDs rejected
 
     @MainActor
