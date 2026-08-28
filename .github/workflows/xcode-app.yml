@@ -27,8 +27,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Show Xcode version
+      - name: Show default Xcode version
         run: xcodebuild -version
+
+      # XcodeGen 2.46.0's own dependency graph pulls in XcodeProj 9.14.0,
+      # which declares swift-tools-version 6.0. macos-14's default active
+      # Xcode is 15.4, which cannot resolve a tools-version-6.0 manifest -
+      # confirmed root cause of the prior run's failure. Xcode 16.2 is
+      # confirmed present on this runner image at the path below (verified
+      # against GitHub's own runner-images documentation before use, not
+      # assumed). xcode-select changes the system-wide default for the rest
+      # of this job; DEVELOPER_DIR is additionally exported to every later
+      # step as an explicit, redundant safeguard.
+      - name: Select Xcode 16.2 and verify toolchain
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          echo "DEVELOPER_DIR=/Applications/Xcode_16.2.app/Contents/Developer" >> "$GITHUB_ENV"
+          xcodebuild -version
+          swift --version
 
       # Deterministic, pinned XcodeGen install: builds the exact 2.46.0 git
       # tag from source via the project's own documented `make install`
