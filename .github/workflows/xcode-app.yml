@@ -1,0 +1,81 @@
+name: Xcode App Verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'QasatiApp/**'
+      - '.github/workflows/xcode-app.yml'
+
+jobs:
+  xcode-app:
+    name: Generate and Build QasatiApp
+    runs-on: macos-14
+
+    env:
+      XCODEGEN_VERSION: "2.46.0"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      # Deterministic, pinned XcodeGen install: builds the exact 2.46.0 git
+      # tag from source via the project's own documented `make install`
+      # target, rather than a floating `brew install xcodegen` (which tracks
+      # whatever Homebrew's formula currently points at, not a pinned
+      # version) or an unverified pre-built release zip whose internal
+      # layout is undocumented.
+      - name: Install XcodeGen (pinned)
+        run: |
+          git clone --branch "$XCODEGEN_VERSION" --depth 1 https://github.com/yonaskolb/XcodeGen.git /tmp/XcodeGen-src
+          cd /tmp/XcodeGen-src
+          make install
+          cd -
+          INSTALLED_VERSION=$(xcodegen --version)
+          echo "Installed XcodeGen version: $INSTALLED_VERSION"
+
+      - name: Generate Xcode project from project.yml
+        run: xcodegen generate --spec QasatiApp/project.yml
+
+      - name: Verify generated project exists
+        run: |
+          if [ ! -d "QasatiApp/QasatiApp.xcodeproj" ]; then
+            echo "::error::QasatiApp/QasatiApp.xcodeproj was not generated."
+            exit 1
+          fi
+          echo "Generated project found at QasatiApp/QasatiApp.xcodeproj"
+          ls -la QasatiApp/QasatiApp.xcodeproj
+
+      - name: List available iOS Simulators
+        run: xcrun simctl list devices available
+
+      - name: Build QasatiApp (Simulator, unsigned)
+        run: |
+          xcodebuild build \
+            -project QasatiApp/QasatiApp.xcodeproj \
+            -scheme QasatiApp \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run QasatiAppTests (Simulator, unsigned)
+        run: |
+          xcodebuild test \
+            -project QasatiApp/QasatiApp.xcodeproj \
+            -scheme QasatiApp \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+            -only-testing:QasatiAppTests \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run QasatiAppUITests (Simulator, unsigned)
+        run: |
+          xcodebuild test \
+            -project QasatiApp/QasatiApp.xcodeproj \
+            -scheme QasatiApp \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+            -only-testing:QasatiAppUITests \
+            CODE_SIGNING_ALLOWED=NO

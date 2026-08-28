@@ -1,0 +1,79 @@
+name: QasatiApp
+
+options:
+  bundleIdPrefix: com.qasati
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  Qasati:
+    path: ..
+
+targets:
+  QasatiApp:
+    type: application
+    platform: iOS
+    sources:
+      - QasatiApp
+    info:
+      path: QasatiApp/Info.plist
+      properties:
+        NSFaceIDUsageDescription: "يستخدم قاصتي تقنية Face ID لحماية بياناتك المالية ومنع الوصول غير المصرح به إلى قاصتك."
+        UILaunchScreen: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.qasati.app
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"
+    dependencies:
+      - package: Qasati
+        product: QasatiPersistence
+      - package: Qasati
+        product: QasatiPresentation
+      - package: Qasati
+        product: QasatiDashboardFeature
+      - package: Qasati
+        product: QasatiTransactionFormsFeature
+      - package: Qasati
+        product: QasatiHistoryFeature
+      - package: Qasati
+        product: QasatiSettingsFeature
+      - package: Qasati
+        product: QasatiSecurityFeature
+
+  QasatiAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - QasatiAppTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.qasati.app.tests
+    dependencies:
+      - target: QasatiApp
+      - package: Qasati
+        product: QasatiSecurityFeature
+
+  QasatiAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - QasatiAppUITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.qasati.app.uitests
+    dependencies:
+      - target: QasatiApp
+
+schemes:
+  QasatiApp:
+    build:
+      targets:
+        QasatiApp: all
+    test:
+      targets:
+        - QasatiAppTests
+        - QasatiAppUITests
+    run:
+      config: Debug
