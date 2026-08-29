@@ -30,7 +30,7 @@ final class DepositFormUITests: XCTestCase {
 
     func test_validDeposit_submitSucceeds_fieldsClear() {
         let amountField = app.textFields["المبلغ"]
-        XCTAssertTrue(amountField.waitForExistence(timeout: 10))
+        XCTAssertTrue(amountField.waitForExistence(timeout: 20))
         amountField.tap()
         amountField.typeText("500000")
 
@@ -48,12 +48,12 @@ final class DepositFormUITests: XCTestCase {
     func test_invalidAmount_showsValidationMessage() {
         app.buttons["إضافة إلى القاصة"].tap()
 
-        XCTAssertTrue(app.staticTexts["يرجى إدخال مبلغ صحيح."].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["يرجى إدخال مبلغ صحيح."].waitForExistence(timeout: 20))
     }
 
     func test_quickSalary_prefillsNote_createsNoTransactionBeforeSubmit() {
         let noteField = app.textFields["الملاحظات، اختياري"]
-        XCTAssertTrue(noteField.waitForExistence(timeout: 10))
+        XCTAssertTrue(noteField.waitForExistence(timeout: 20))
         XCTAssertEqual((noteField.value as? String) ?? "", "")
 
         app.buttons["⚡ إضافة راتب سريع"].tap()

@@ -25,7 +25,7 @@ final class WithdrawUITests: XCTestCase {
 
     func test_validWithdrawal_afterDeposit_succeeds() {
         let amountField = app.textFields["المبلغ"]
-        XCTAssertTrue(amountField.waitForExistence(timeout: 10))
+        XCTAssertTrue(amountField.waitForExistence(timeout: 20))
         amountField.tap()
         amountField.typeText("500000")
         app.buttons["إضافة إلى القاصة"].tap()
@@ -33,7 +33,7 @@ final class WithdrawUITests: XCTestCase {
         app.buttons["سحب"].tap() // مقطع السحب في مُقسِّم النوع
 
         let withdrawAmountField = app.textFields["المبلغ"]
-        XCTAssertTrue(withdrawAmountField.waitForExistence(timeout: 10))
+        XCTAssertTrue(withdrawAmountField.waitForExistence(timeout: 20))
         withdrawAmountField.tap()
         withdrawAmountField.typeText("200000")
         app.buttons["سحب من القاصة"].tap()

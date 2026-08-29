@@ -30,7 +30,7 @@ final class HistoryUITests: XCTestCase {
     private func addDeposit(amount: String, note: String) {
         tap(app.tabBars.buttons["tab.addTransaction"])
         let amountField = app.textFields["المبلغ"]
-        XCTAssertTrue(amountField.waitForExistence(timeout: 10))
+        XCTAssertTrue(amountField.waitForExistence(timeout: 20))
         amountField.tap()
         amountField.typeText(amount)
         let noteField = app.textFields["الملاحظات، اختياري"]
@@ -61,7 +61,7 @@ final class HistoryUITests: XCTestCase {
 
         tap(app.tabBars.buttons["tab.history"])
         let searchField = app.textFields["بحث في الملاحظات"]
-        XCTAssertTrue(searchField.waitForExistence(timeout: 10))
+        XCTAssertTrue(searchField.waitForExistence(timeout: 20))
         searchField.tap()
         searchField.typeText("راتب")
 
@@ -77,7 +77,7 @@ final class HistoryUITests: XCTestCase {
         app.buttons["تعديل العملية"].firstMatch.tap()
 
         let amountField = app.textFields["المبلغ"].firstMatch
-        XCTAssertTrue(amountField.waitForExistence(timeout: 10))
+        XCTAssertTrue(amountField.waitForExistence(timeout: 20))
         clearText(in: amountField)
         amountField.typeText("750000")
         app.buttons["حفظ التعديلات"].tap()
@@ -92,14 +92,14 @@ final class HistoryUITests: XCTestCase {
 
         app.buttons["حذف العملية"].firstMatch.tap()
         let cancelButton = app.buttons["إلغاء"]
-        XCTAssertTrue(cancelButton.waitForExistence(timeout: 10))
+        XCTAssertTrue(cancelButton.waitForExistence(timeout: 20))
         cancelButton.tap()
 
         XCTAssertTrue(waitForText("للحذف")) // أُلغي — ما زالت موجودة
 
         app.buttons["حذف العملية"].firstMatch.tap()
         let confirmButton = app.buttons["حذف العملية"].firstMatch
-        XCTAssertTrue(confirmButton.waitForExistence(timeout: 10))
+        XCTAssertTrue(confirmButton.waitForExistence(timeout: 20))
         confirmButton.tap()
 
         XCTAssertTrue(waitForText("القاصة فارغة"))

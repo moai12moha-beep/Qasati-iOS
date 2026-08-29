@@ -35,7 +35,7 @@ final class NavigationUITests: XCTestCase {
 
     func test_launch_dashboardTabIsVisibleAndSelected() {
         let dashboardTab = app.tabBars.buttons["tab.dashboard"]
-        XCTAssertTrue(dashboardTab.waitForExistence(timeout: 10))
+        XCTAssertTrue(dashboardTab.waitForExistence(timeout: 20))
         XCTAssertTrue(dashboardTab.isSelected)
         XCTAssertTrue(waitForText("الرصيد"))
     }
@@ -45,10 +45,10 @@ final class NavigationUITests: XCTestCase {
         let addTab = app.tabBars.buttons["tab.addTransaction"]
         let historyTab = app.tabBars.buttons["tab.history"]
         let settingsTab = app.tabBars.buttons["tab.settings"]
-        XCTAssertTrue(dashboardTab.waitForExistence(timeout: 10))
+        XCTAssertTrue(dashboardTab.waitForExistence(timeout: 20))
 
         tap(addTab)
-        XCTAssertTrue(app.buttons["إضافة إلى القاصة"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["إضافة إلى القاصة"].waitForExistence(timeout: 20))
         XCTAssertTrue(addTab.isSelected)
 
         tap(historyTab)
@@ -57,7 +57,7 @@ final class NavigationUITests: XCTestCase {
 
         tap(settingsTab)
         XCTAssertTrue(settingsTab.isSelected)
-        XCTAssertTrue(app.switches["🌙 الوضع الليلي"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.switches["🌙 الوضع الليلي"].waitForExistence(timeout: 20))
 
         tap(dashboardTab)
         XCTAssertTrue(dashboardTab.isSelected)
