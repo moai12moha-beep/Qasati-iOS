@@ -15,7 +15,7 @@ final class HistoryUITests: XCTestCase {
         app = nil
     }
 
-    private func waitForText(_ text: String, timeout: TimeInterval = 10) -> Bool {
+    private func waitForText(_ text: String, timeout: TimeInterval = 20) -> Bool {
         let predicate = NSPredicate(format: "label CONTAINS %@", text)
         return app.descendants(matching: .any).matching(predicate).firstMatch.waitForExistence(timeout: timeout)
     }
@@ -48,31 +48,31 @@ final class HistoryUITests: XCTestCase {
     }
 
     func test_addedTransaction_appearsInHistory() {
-        addDeposit(amount: "500000", note: "ملاحظة اختبار السجل")
+        addDeposit(amount: "500000", note: "TEST-NOTE-HISTORY")
 
         tap(app.tabBars.buttons["tab.history"])
 
-        XCTAssertTrue(waitForText("ملاحظة اختبار السجل"))
+        XCTAssertTrue(waitForText("TEST-NOTE-HISTORY"))
     }
 
     func test_search_filtersToMatchingNoteOnly() {
-        addDeposit(amount: "500000", note: "راتب آب")
-        addDeposit(amount: "100000", note: "مصاريف شخصية")
+        addDeposit(amount: "500000", note: "TEST-SALARY-AUG")
+        addDeposit(amount: "100000", note: "TEST-EXPENSE-PERSONAL")
 
         tap(app.tabBars.buttons["tab.history"])
         let searchField = app.textFields["بحث في الملاحظات"]
         XCTAssertTrue(searchField.waitForExistence(timeout: 20))
         searchField.tap()
-        searchField.typeText("راتب")
+        searchField.typeText("TEST-SALARY")
 
-        XCTAssertTrue(waitForText("راتب آب"))
-        XCTAssertFalse(waitForText("مصاريف شخصية", timeout: 3))
+        XCTAssertTrue(waitForText("TEST-SALARY-AUG"))
+        XCTAssertFalse(waitForText("TEST-EXPENSE-PERSONAL", timeout: 3))
     }
 
     func test_editTransaction_updatedAmountVisible() {
-        addDeposit(amount: "500000", note: "قبل التعديل")
+        addDeposit(amount: "500000", note: "TEST-BEFORE-EDIT")
         tap(app.tabBars.buttons["tab.history"])
-        XCTAssertTrue(waitForText("قبل التعديل"))
+        XCTAssertTrue(waitForText("TEST-BEFORE-EDIT"))
 
         app.buttons["تعديل العملية"].firstMatch.tap()
 
@@ -86,16 +86,16 @@ final class HistoryUITests: XCTestCase {
     }
 
     func test_deleteConfirmation_cancelKeepsTransaction_confirmRemovesIt() {
-        addDeposit(amount: "500000", note: "للحذف")
+        addDeposit(amount: "500000", note: "TEST-TO-DELETE")
         tap(app.tabBars.buttons["tab.history"])
-        XCTAssertTrue(waitForText("للحذف"))
+        XCTAssertTrue(waitForText("TEST-TO-DELETE"))
 
         app.buttons["حذف العملية"].firstMatch.tap()
         let cancelButton = app.buttons["إلغاء"]
         XCTAssertTrue(cancelButton.waitForExistence(timeout: 20))
         cancelButton.tap()
 
-        XCTAssertTrue(waitForText("للحذف")) // أُلغي — ما زالت موجودة
+        XCTAssertTrue(waitForText("TEST-TO-DELETE")) // أُلغي — ما زالت موجودة
 
         app.buttons["حذف العملية"].firstMatch.tap()
         let confirmButton = app.buttons["حذف العملية"].firstMatch

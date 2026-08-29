@@ -34,6 +34,7 @@ final class NavigationUITests: XCTestCase {
     }
 
     func test_launch_dashboardTabIsVisibleAndSelected() {
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 20))
         let dashboardTab = app.tabBars.buttons["tab.dashboard"]
         XCTAssertTrue(dashboardTab.waitForExistence(timeout: 20))
         XCTAssertTrue(dashboardTab.isSelected)
@@ -41,6 +42,7 @@ final class NavigationUITests: XCTestCase {
     }
 
     func test_navigateAllFourTabs() {
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 20))
         let dashboardTab = app.tabBars.buttons["tab.dashboard"]
         let addTab = app.tabBars.buttons["tab.addTransaction"]
         let historyTab = app.tabBars.buttons["tab.history"]
