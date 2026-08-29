@@ -15,7 +15,7 @@ final class HistoryUITests: XCTestCase {
         app = nil
     }
 
-    private func waitForText(_ text: String, timeout: TimeInterval = 20) -> Bool {
+    private func waitForText(_ text: String, timeout: TimeInterval = 10) -> Bool {
         let predicate = NSPredicate(format: "label CONTAINS %@", text)
         return app.descendants(matching: .any).matching(predicate).firstMatch.waitForExistence(timeout: timeout)
     }
@@ -24,8 +24,7 @@ final class HistoryUITests: XCTestCase {
     /// هذه (macos-14 Simulator) تُظهر أحيانًا فشل "scroll to visible" (AXAction) غير
     /// مرتبط بأي سلوك إنتاجي فعلي؛ النقر بالإحداثيات يتجاوز تلك الخطوة تمامًا.
     private func tap(_ element: XCUIElement) {
-        _ = element.waitForExistence(timeout: 20)
-        element.tap()
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
 
     private func addDeposit(amount: String, note: String) {
