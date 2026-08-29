@@ -31,7 +31,7 @@ final class NavigationUITests: XCTestCase {
     /// مرتبط بأي سلوك إنتاجي فعلي؛ النقر بالإحداثيات يتجاوز تلك الخطوة تمامًا.
     private func tap(_ element: XCUIElement) {
         _ = element.waitForExistence(timeout: 20)
-        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        element.tap()
     }
 
     func test_launch_dashboardTabIsVisibleAndSelected() {
