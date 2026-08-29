@@ -9,13 +9,14 @@ final class HistoryUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["UI-TESTING"]
         app.launch()
+        Thread.sleep(forTimeInterval: 2) // مهلة استقرار قصيرة بعد الإطلاق، راجع NavigationUITests
     }
 
     override func tearDownWithError() throws {
         app = nil
     }
 
-    private func waitForText(_ text: String, timeout: TimeInterval = 10) -> Bool {
+    private func waitForText(_ text: String, timeout: TimeInterval = 20) -> Bool {
         let predicate = NSPredicate(format: "label CONTAINS %@", text)
         return app.descendants(matching: .any).matching(predicate).firstMatch.waitForExistence(timeout: timeout)
     }

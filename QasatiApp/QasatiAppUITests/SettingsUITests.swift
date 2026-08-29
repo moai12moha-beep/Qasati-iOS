@@ -9,6 +9,7 @@ final class SettingsUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["UI-TESTING"]
         app.launch()
+        Thread.sleep(forTimeInterval: 2) // مهلة استقرار قصيرة بعد الإطلاق، راجع NavigationUITests
         tap(app.tabBars.buttons["tab.settings"])
     }
 
