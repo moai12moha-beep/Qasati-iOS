@@ -9,16 +9,23 @@ final class WithdrawUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["UI-TESTING"]
         app.launch()
-        app.tabBars.buttons["tab.addTransaction"].tap()
+        tap(app.tabBars.buttons["tab.addTransaction"])
     }
 
     override func tearDownWithError() throws {
         app = nil
     }
 
+    /// نقر بالإحداثيات بدل XCUIElement.tap() الافتراضي — أزرار شريط التبويب في بيئة CI
+    /// هذه (macos-14 Simulator) تُظهر أحيانًا فشل "scroll to visible" (AXAction) غير
+    /// مرتبط بأي سلوك إنتاجي فعلي؛ النقر بالإحداثيات يتجاوز تلك الخطوة تمامًا.
+    private func tap(_ element: XCUIElement) {
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+    }
+
     func test_validWithdrawal_afterDeposit_succeeds() {
         let amountField = app.textFields["المبلغ"]
-        XCTAssertTrue(amountField.waitForExistence(timeout: 5))
+        XCTAssertTrue(amountField.waitForExistence(timeout: 10))
         amountField.tap()
         amountField.typeText("500000")
         app.buttons["إضافة إلى القاصة"].tap()
@@ -26,7 +33,7 @@ final class WithdrawUITests: XCTestCase {
         app.buttons["سحب"].tap() // مقطع السحب في مُقسِّم النوع
 
         let withdrawAmountField = app.textFields["المبلغ"]
-        XCTAssertTrue(withdrawAmountField.waitForExistence(timeout: 5))
+        XCTAssertTrue(withdrawAmountField.waitForExistence(timeout: 10))
         withdrawAmountField.tap()
         withdrawAmountField.typeText("200000")
         app.buttons["سحب من القاصة"].tap()

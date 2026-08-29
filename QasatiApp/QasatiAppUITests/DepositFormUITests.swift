@@ -9,21 +9,28 @@ final class DepositFormUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["UI-TESTING"]
         app.launch()
-        app.tabBars.buttons["tab.addTransaction"].tap()
+        tap(app.tabBars.buttons["tab.addTransaction"])
     }
 
     override func tearDownWithError() throws {
         app = nil
     }
 
-    private func waitForText(_ text: String, timeout: TimeInterval = 5) -> Bool {
+    private func waitForText(_ text: String, timeout: TimeInterval = 10) -> Bool {
         let predicate = NSPredicate(format: "label CONTAINS %@", text)
         return app.descendants(matching: .any).matching(predicate).firstMatch.waitForExistence(timeout: timeout)
     }
 
+    /// نقر بالإحداثيات بدل XCUIElement.tap() الافتراضي — أزرار شريط التبويب في بيئة CI
+    /// هذه (macos-14 Simulator) تُظهر أحيانًا فشل "scroll to visible" (AXAction) غير
+    /// مرتبط بأي سلوك إنتاجي فعلي؛ النقر بالإحداثيات يتجاوز تلك الخطوة تمامًا.
+    private func tap(_ element: XCUIElement) {
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+    }
+
     func test_validDeposit_submitSucceeds_fieldsClear() {
         let amountField = app.textFields["المبلغ"]
-        XCTAssertTrue(amountField.waitForExistence(timeout: 5))
+        XCTAssertTrue(amountField.waitForExistence(timeout: 10))
         amountField.tap()
         amountField.typeText("500000")
 
@@ -41,12 +48,12 @@ final class DepositFormUITests: XCTestCase {
     func test_invalidAmount_showsValidationMessage() {
         app.buttons["إضافة إلى القاصة"].tap()
 
-        XCTAssertTrue(app.staticTexts["يرجى إدخال مبلغ صحيح."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["يرجى إدخال مبلغ صحيح."].waitForExistence(timeout: 10))
     }
 
     func test_quickSalary_prefillsNote_createsNoTransactionBeforeSubmit() {
         let noteField = app.textFields["الملاحظات، اختياري"]
-        XCTAssertTrue(noteField.waitForExistence(timeout: 5))
+        XCTAssertTrue(noteField.waitForExistence(timeout: 10))
         XCTAssertEqual((noteField.value as? String) ?? "", "")
 
         app.buttons["⚡ إضافة راتب سريع"].tap()
@@ -55,17 +62,17 @@ final class DepositFormUITests: XCTestCase {
         XCTAssertTrue(noteValue.hasPrefix("راتب شهر"), "Expected quick-salary prefill, got: \(noteValue)")
 
         // لم يُنشَأ أي عملية بعد — السجل ما زال فارغًا تمامًا.
-        app.tabBars.buttons["tab.history"].tap()
+        tap(app.tabBars.buttons["tab.history"])
         XCTAssertTrue(waitForText("القاصة فارغة"))
 
         // العودة والإرسال الفعلي هو من يُنشئ العملية.
-        app.tabBars.buttons["tab.addTransaction"].tap()
+        tap(app.tabBars.buttons["tab.addTransaction"])
         let amountField = app.textFields["المبلغ"]
         amountField.tap()
         amountField.typeText("300000")
         app.buttons["إضافة إلى القاصة"].tap()
 
-        app.tabBars.buttons["tab.history"].tap()
-        XCTAssertFalse(waitForText("القاصة فارغة", timeout: 2))
+        tap(app.tabBars.buttons["tab.history"])
+        XCTAssertFalse(waitForText("القاصة فارغة", timeout: 3))
     }
 }

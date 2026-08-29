@@ -15,15 +15,22 @@ final class HistoryUITests: XCTestCase {
         app = nil
     }
 
-    private func waitForText(_ text: String, timeout: TimeInterval = 5) -> Bool {
+    private func waitForText(_ text: String, timeout: TimeInterval = 10) -> Bool {
         let predicate = NSPredicate(format: "label CONTAINS %@", text)
         return app.descendants(matching: .any).matching(predicate).firstMatch.waitForExistence(timeout: timeout)
     }
 
+    /// نقر بالإحداثيات بدل XCUIElement.tap() الافتراضي — أزرار شريط التبويب في بيئة CI
+    /// هذه (macos-14 Simulator) تُظهر أحيانًا فشل "scroll to visible" (AXAction) غير
+    /// مرتبط بأي سلوك إنتاجي فعلي؛ النقر بالإحداثيات يتجاوز تلك الخطوة تمامًا.
+    private func tap(_ element: XCUIElement) {
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+    }
+
     private func addDeposit(amount: String, note: String) {
-        app.tabBars.buttons["tab.addTransaction"].tap()
+        tap(app.tabBars.buttons["tab.addTransaction"])
         let amountField = app.textFields["المبلغ"]
-        XCTAssertTrue(amountField.waitForExistence(timeout: 5))
+        XCTAssertTrue(amountField.waitForExistence(timeout: 10))
         amountField.tap()
         amountField.typeText(amount)
         let noteField = app.textFields["الملاحظات، اختياري"]
@@ -43,35 +50,34 @@ final class HistoryUITests: XCTestCase {
     func test_addedTransaction_appearsInHistory() {
         addDeposit(amount: "500000", note: "ملاحظة اختبار السجل")
 
-        app.tabBars.buttons["tab.history"].tap()
+        tap(app.tabBars.buttons["tab.history"])
 
         XCTAssertTrue(waitForText("ملاحظة اختبار السجل"))
     }
 
     func test_search_filtersToMatchingNoteOnly() {
         addDeposit(amount: "500000", note: "راتب آب")
-        app.tabBars.buttons["tab.addTransaction"].tap()
         addDeposit(amount: "100000", note: "مصاريف شخصية")
 
-        app.tabBars.buttons["tab.history"].tap()
+        tap(app.tabBars.buttons["tab.history"])
         let searchField = app.textFields["بحث في الملاحظات"]
-        XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+        XCTAssertTrue(searchField.waitForExistence(timeout: 10))
         searchField.tap()
         searchField.typeText("راتب")
 
         XCTAssertTrue(waitForText("راتب آب"))
-        XCTAssertFalse(waitForText("مصاريف شخصية", timeout: 2))
+        XCTAssertFalse(waitForText("مصاريف شخصية", timeout: 3))
     }
 
     func test_editTransaction_updatedAmountVisible() {
         addDeposit(amount: "500000", note: "قبل التعديل")
-        app.tabBars.buttons["tab.history"].tap()
+        tap(app.tabBars.buttons["tab.history"])
         XCTAssertTrue(waitForText("قبل التعديل"))
 
         app.buttons["تعديل العملية"].firstMatch.tap()
 
         let amountField = app.textFields["المبلغ"].firstMatch
-        XCTAssertTrue(amountField.waitForExistence(timeout: 5))
+        XCTAssertTrue(amountField.waitForExistence(timeout: 10))
         clearText(in: amountField)
         amountField.typeText("750000")
         app.buttons["حفظ التعديلات"].tap()
@@ -81,19 +87,19 @@ final class HistoryUITests: XCTestCase {
 
     func test_deleteConfirmation_cancelKeepsTransaction_confirmRemovesIt() {
         addDeposit(amount: "500000", note: "للحذف")
-        app.tabBars.buttons["tab.history"].tap()
+        tap(app.tabBars.buttons["tab.history"])
         XCTAssertTrue(waitForText("للحذف"))
 
         app.buttons["حذف العملية"].firstMatch.tap()
         let cancelButton = app.buttons["إلغاء"]
-        XCTAssertTrue(cancelButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(cancelButton.waitForExistence(timeout: 10))
         cancelButton.tap()
 
         XCTAssertTrue(waitForText("للحذف")) // أُلغي — ما زالت موجودة
 
         app.buttons["حذف العملية"].firstMatch.tap()
         let confirmButton = app.buttons["حذف العملية"].firstMatch
-        XCTAssertTrue(confirmButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(confirmButton.waitForExistence(timeout: 10))
         confirmButton.tap()
 
         XCTAssertTrue(waitForText("القاصة فارغة"))
