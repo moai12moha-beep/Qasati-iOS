@@ -49,24 +49,32 @@ struct RootView: View {
             } else {
                 TabView(selection: $selectedTab) {
                     DashboardTabView(context: modelContext, refreshSignal: refreshSignal)
-                        .tabItem { Label("الرئيسية", systemImage: "house.fill") }
+                        .tabItem {
+                            Label("الرئيسية", systemImage: "house.fill")
+                                .accessibilityIdentifier("tab.dashboard")
+                        }
                         .tag(AppTab.dashboard)
-                        .accessibilityIdentifier("tab.dashboard")
 
                     AddTransactionTabView(context: modelContext, refreshSignal: refreshSignal)
-                        .tabItem { Label("إضافة", systemImage: "plus.circle.fill") }
+                        .tabItem {
+                            Label("إضافة", systemImage: "plus.circle.fill")
+                                .accessibilityIdentifier("tab.addTransaction")
+                        }
                         .tag(AppTab.addTransaction)
-                        .accessibilityIdentifier("tab.addTransaction")
 
                     HistoryTabView(context: modelContext, refreshSignal: refreshSignal)
-                        .tabItem { Label("السجل", systemImage: "clock.fill") }
+                        .tabItem {
+                            Label("السجل", systemImage: "clock.fill")
+                                .accessibilityIdentifier("tab.history")
+                        }
                         .tag(AppTab.history)
-                        .accessibilityIdentifier("tab.history")
 
                     SettingsTabView(context: modelContext, preferences: preferences, refreshSignal: refreshSignal)
-                        .tabItem { Label("الإعدادات", systemImage: "gearshape.fill") }
+                        .tabItem {
+                            Label("الإعدادات", systemImage: "gearshape.fill")
+                                .accessibilityIdentifier("tab.settings")
+                        }
                         .tag(AppTab.settings)
-                        .accessibilityIdentifier("tab.settings")
                 }
             }
         }
