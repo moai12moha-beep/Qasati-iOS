@@ -51,18 +51,22 @@ struct RootView: View {
                     DashboardTabView(context: modelContext, refreshSignal: refreshSignal)
                         .tabItem { Label("الرئيسية", systemImage: "house.fill") }
                         .tag(AppTab.dashboard)
+                        .accessibilityIdentifier("tab.dashboard")
 
                     AddTransactionTabView(context: modelContext, refreshSignal: refreshSignal)
                         .tabItem { Label("إضافة", systemImage: "plus.circle.fill") }
                         .tag(AppTab.addTransaction)
+                        .accessibilityIdentifier("tab.addTransaction")
 
                     HistoryTabView(context: modelContext, refreshSignal: refreshSignal)
                         .tabItem { Label("السجل", systemImage: "clock.fill") }
                         .tag(AppTab.history)
+                        .accessibilityIdentifier("tab.history")
 
                     SettingsTabView(context: modelContext, preferences: preferences, refreshSignal: refreshSignal)
                         .tabItem { Label("الإعدادات", systemImage: "gearshape.fill") }
                         .tag(AppTab.settings)
+                        .accessibilityIdentifier("tab.settings")
                 }
             }
         }
