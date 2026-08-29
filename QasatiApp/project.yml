@@ -54,6 +54,16 @@ targets:
       - target: QasatiApp
       - package: Qasati
         product: QasatiSecurityFeature
+      - package: Qasati
+        product: QasatiPersistence
+      - package: Qasati
+        product: QasatiDashboardFeature
+      - package: Qasati
+        product: QasatiTransactionFormsFeature
+      - package: Qasati
+        product: QasatiHistoryFeature
+      - package: Qasati
+        product: QasatiSettingsFeature
 
   QasatiAppUITests:
     type: bundle.ui-testing
