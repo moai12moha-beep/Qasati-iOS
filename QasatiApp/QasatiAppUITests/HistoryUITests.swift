@@ -9,7 +9,6 @@ final class HistoryUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["UI-TESTING"]
         app.launch()
-        Thread.sleep(forTimeInterval: 2) // مهلة استقرار قصيرة بعد الإطلاق، راجع NavigationUITests
     }
 
     override func tearDownWithError() throws {

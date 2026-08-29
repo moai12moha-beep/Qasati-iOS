@@ -12,11 +12,6 @@ final class NavigationUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["UI-TESTING"]
         app.launch()
-        // مهلة استقرار قصيرة: عنصر شريط التبويب "المُحدَّد افتراضيًا" (لوحة القيادة) لوحظ
-        // أنه يحتاج لحظة إضافية ليُسجَّل في شجرة إمكانية الوصول بعد الإطلاق مباشرة، بخلاف
-        // تبويبات يصل إليها المستخدم بالتنقل الصريح لاحقًا — قيد بيئة اختبار ملاحَظ في CI،
-        // وليس سلوكًا إنتاجيًا فعليًا.
-        Thread.sleep(forTimeInterval: 2)
     }
 
     override func tearDownWithError() throws {
