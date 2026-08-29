@@ -26,6 +26,7 @@ final class DepositFormUITests: XCTestCase {
     /// هذه (macos-14 Simulator) تُظهر أحيانًا فشل "scroll to visible" (AXAction) غير
     /// مرتبط بأي سلوك إنتاجي فعلي؛ النقر بالإحداثيات يتجاوز تلك الخطوة تمامًا.
     private func tap(_ element: XCUIElement) {
+        _ = element.waitForExistence(timeout: 20)
         element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
 
