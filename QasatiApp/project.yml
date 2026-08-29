@@ -64,6 +64,8 @@ targets:
         product: QasatiHistoryFeature
       - package: Qasati
         product: QasatiSettingsFeature
+      - package: Qasati
+        product: QasatiDomain
 
   QasatiAppUITests:
     type: bundle.ui-testing
