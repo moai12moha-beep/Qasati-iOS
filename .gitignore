@@ -4,3 +4,8 @@ DerivedData/
 xcuserdata/
 *.xcuserstate
 .DS_Store
+
+# QasatiApp/project.yml is the committed source of truth (Phase 16, Step 3) —
+# the Xcode project it generates is a build artifact, never committed, so it
+# can never silently drift from the spec.
+QasatiApp/QasatiApp.xcodeproj/
