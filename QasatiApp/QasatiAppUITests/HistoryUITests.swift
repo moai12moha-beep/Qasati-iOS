@@ -9,6 +9,10 @@ final class HistoryUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["UI-TESTING"]
         app.launch()
+        // إحماء: أول استعلام عن شريط التبويبات يتم هنا (وليس داخل جسم الاختبار مباشرة) —
+        // هذا الاستعلام غير المُثبَت (تجاهل النتيجة) يمنح شجرة الوصول نفس فرصة الاستقرار
+        // التي تحصل عليها بقية ملفات الاختبار التي تنقر تبويبًا داخل setUp.
+        _ = app.tabBars.buttons["tab.dashboard"].waitForExistence(timeout: 20)
     }
 
     override func tearDownWithError() throws {
@@ -51,6 +55,9 @@ final class HistoryUITests: XCTestCase {
         addDeposit(amount: "500000", note: "TEST-NOTE-HISTORY")
 
         tap(app.tabBars.buttons["tab.history"])
+        // انتظار عنصر عام لشاشة السجل قبل التحقق من محتوى محدَّد أُضيف للتو — يمنح
+        // القائمة فرصة العرض الكامل بعد التنقل مباشرة.
+        XCTAssertTrue(waitForText("سجل"))
 
         XCTAssertTrue(waitForText("TEST-NOTE-HISTORY"))
     }
@@ -60,6 +67,9 @@ final class HistoryUITests: XCTestCase {
         addDeposit(amount: "100000", note: "TEST-EXPENSE-PERSONAL")
 
         tap(app.tabBars.buttons["tab.history"])
+        // انتظار عنصر عام لشاشة السجل قبل التحقق من محتوى محدَّد أُضيف للتو — يمنح
+        // القائمة فرصة العرض الكامل بعد التنقل مباشرة.
+        XCTAssertTrue(waitForText("سجل"))
         let searchField = app.textFields["بحث في الملاحظات"]
         XCTAssertTrue(searchField.waitForExistence(timeout: 20))
         searchField.tap()
@@ -72,6 +82,9 @@ final class HistoryUITests: XCTestCase {
     func test_editTransaction_updatedAmountVisible() {
         addDeposit(amount: "500000", note: "TEST-BEFORE-EDIT")
         tap(app.tabBars.buttons["tab.history"])
+        // انتظار عنصر عام لشاشة السجل قبل التحقق من محتوى محدَّد أُضيف للتو — يمنح
+        // القائمة فرصة العرض الكامل بعد التنقل مباشرة.
+        XCTAssertTrue(waitForText("سجل"))
         XCTAssertTrue(waitForText("TEST-BEFORE-EDIT"))
 
         app.buttons["تعديل العملية"].firstMatch.tap()
@@ -88,6 +101,9 @@ final class HistoryUITests: XCTestCase {
     func test_deleteConfirmation_cancelKeepsTransaction_confirmRemovesIt() {
         addDeposit(amount: "500000", note: "TEST-TO-DELETE")
         tap(app.tabBars.buttons["tab.history"])
+        // انتظار عنصر عام لشاشة السجل قبل التحقق من محتوى محدَّد أُضيف للتو — يمنح
+        // القائمة فرصة العرض الكامل بعد التنقل مباشرة.
+        XCTAssertTrue(waitForText("سجل"))
         XCTAssertTrue(waitForText("TEST-TO-DELETE"))
 
         app.buttons["حذف العملية"].firstMatch.tap()

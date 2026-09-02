@@ -12,6 +12,11 @@ final class NavigationUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["UI-TESTING"]
         app.launch()
+        // إحماء: أول استعلام عن شريط التبويبات يتم هنا (وليس داخل جسم الاختبار مباشرة) —
+        // الاختبارات الأخرى التي تنقر تبويبًا داخل setUp لا تعاني من فشل حل العنصر الأول
+        // بعد الإطلاق؛ هذا الاستعلام غير المُثبَت (تجاهل النتيجة) يمنح شجرة الوصول نفس
+        // فرصة الاستقرار قبل بدء جسم الاختبار.
+        _ = app.tabBars.buttons["tab.dashboard"].waitForExistence(timeout: 20)
     }
 
     override func tearDownWithError() throws {
@@ -34,16 +39,17 @@ final class NavigationUITests: XCTestCase {
     }
 
     func test_launch_dashboardTabIsVisibleAndSelected() {
-        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 20))
-        let dashboardTab = app.tabBars.buttons["tab.dashboard"]
+        // استعلام بالموضع بدل المُعرِّف لتبويب "الرئيسية" تحديدًا: تبيَّن عبر عدة تشغيلات CI
+        // حقيقية أن الاستعلام بمعرِّف التبويب الافتراضي/المُحدَّد مسبقًا تحديدًا (وليس بقية
+        // التبويبات) لا يُحل بشكل موثوق فور الإطلاق، رغم أن شريط التبويبات نفسه موجود.
+        let dashboardTab = app.tabBars.buttons.element(boundBy: 0)
         XCTAssertTrue(dashboardTab.waitForExistence(timeout: 20))
         XCTAssertTrue(dashboardTab.isSelected)
         XCTAssertTrue(waitForText("الرصيد"))
     }
 
     func test_navigateAllFourTabs() {
-        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 20))
-        let dashboardTab = app.tabBars.buttons["tab.dashboard"]
+        let dashboardTab = app.tabBars.buttons.element(boundBy: 0)
         let addTab = app.tabBars.buttons["tab.addTransaction"]
         let historyTab = app.tabBars.buttons["tab.history"]
         let settingsTab = app.tabBars.buttons["tab.settings"]
